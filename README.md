@@ -4,7 +4,7 @@ Pixel-wise segmentation of cancerous tissue regions (CTRs) is important for path
 We propose HiST-Seg, a context--detail dual-stream framework for pixel-wise CTR segmentation using ST data and H\&E-stained images. Specifically, its detail stream extracts fine-grained morphological information and boundary cues from high-resolution H\&E patches via a pretrained pathology encoder and multi-scale convolutional features. In parallel, its context stream jointly encodes a large-field-of-view H\&E image and a dense ST feature map constructed from spot-level transcriptomic representations. An adaptive cross-resolution fusion mechanism integrates local pathological semantics with tissue-level morphological and molecular context, followed by a context-guided decoder that progressively reconstructs fine CTR boundaries.
 HiST-Seg can be trained on multiple source tissue sections of the same cancer type and directly applied to unseen target sections without target-specific fine-tuning. Experiments on four spatial transcriptomics datasets covering 22 tissue sections from breast cancer and colorectal cancer (CRC) demonstrate that HiST-Seg achieves superior performance in both CTR segmentation and cross-section generalization.
 
-![Fig1.png](Fig1.png)
+![Fig2_architecture.jpg](Fig2_architecture.jpg)
 
 ## Requirements
 All experiments were conducted on an NVIDIA RTX 3090 GPU. Before running SpaMCAF, you need to create a conda environment and install the required packages:
