@@ -38,5 +38,3 @@ Given the outstanding performance of large pre-trained general-purpose foundatio
 - Run train.py
 - Run test.py
 
-## Contact details
-If you have any questions, please contact dunameng0607@163.com and wenwen.min@qq.com.
