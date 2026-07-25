@@ -1,0 +1,14 @@
+torch
+timm
+numpy
+opencv-python
+PyYAML
+tqdm
+scipy
+scikit-learn
+matplotlib
+pandas
+openpyxl
+scanpy
+anndata
+certifi
