@@ -7,7 +7,7 @@ HiST-Seg can be trained on multiple source tissue sections of the same cancer ty
 ![Fig2_architecture.jpg](Fig2_V3_du.jpg)
 
 ## Requirements
-All experiments were conducted on an NVIDIA RTX 3090 GPU. Before running SpaMCAF, you need to create a conda environment and install the required packages:
+All experiments were conducted on an NVIDIA RTX 3090 GPU. Before running HiST-Seg, you need to create a conda environment and install the required packages:
 ```shell
 conda create -n HiST-Seg python==3.11.15
 conda activate HiST-Seg
