@@ -15,8 +15,6 @@ pip install -r requirements.txt
 ```
 
 ## Datasets
-we have curated all six datasets and their respective spot-level labels used across our evaluations and these resources are hosted on Zenodo (\url{https://zenodo.org/records/18205677}).
-
 The ST human HER2-positive breast tumor datasets (STHBC) are available in: [https://github.com/almaan/her2st](https://github.com/almaan/her2st).
 
 The 10X Visium Human Breast Cancer Breast Cancer: Ductal Carcinoma In Situ, Lobular carcinoma In Situ, Invasive Carcinoma dataset (ViHBC) are available in: [https://www.10xgenomics.com/datasets/human-breast-cancer-block-a-section-1-1-standard-1-1-0](https://www.10xgenomics.com/datasets/human-breast-cancer-block-a-section-1-1-standard-1-1-0).
@@ -27,7 +25,6 @@ The 10X Visium Human Breast Cancer: Ductal Carcinoma In Situ, Invasive Carcinoma
 
 The 10X Visium Colorectal Cancer Visium datasets (CRC) are available in: [https://zenodo.org/records/7760264](https://zenodo.org/records/7760264).
 
-The 10X Visium Colorectal Cancer Visium datasets (ST_colon) are available in:[https://www.biosino.org/node/project/detail/OEP001756](https://www.biosino.org/node/project/detail/OEP001756).
 
 
 ## Pre-trained general-purpose foundation mode
