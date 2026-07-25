@@ -9,8 +9,8 @@ HiST-Seg can be trained on multiple source tissue sections of the same cancer ty
 ## Requirements
 All experiments were conducted on an NVIDIA RTX 3090 GPU. Before running SpaMCAF, you need to create a conda environment and install the required packages:
 ```shell
-conda create -n HISTEX python==3.10.15
-conda activate SpaMCAF
+conda create -n HiST-Seg python==3.11.15
+conda activate HiST-Seg
 pip install -r requirements.txt
 ```
 
@@ -28,7 +28,7 @@ The 10X Visium Colorectal Cancer Visium datasets (CRC) are available in: [https:
 
 
 ## Pre-trained general-purpose foundation mode
-Given the outstanding performance of large pre-trained general-purpose foundation models in clinical tasks, we use UNI as the backbone feature extractor. Before using SpaMCAF, you need to apply to UNI for permission to access the model weights: [https://huggingface.co/mahmoodlab/UNI](https://huggingface.co/mahmoodlab/UNI).
+Given the outstanding performance of large pre-trained general-purpose foundation models in clinical tasks, we use UNI as the backbone feature extractor. Before using HiST-Seg, you need to apply to UNI for permission to access the model weights: [https://huggingface.co/mahmoodlab/UNI](https://huggingface.co/mahmoodlab/UNI).
 
 ## HiST-Seg pipeline
 - Install the UNI module form [https://github.com/mahmoodlab/UNI](https://github.com/mahmoodlab/UNI).
