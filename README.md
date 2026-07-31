@@ -28,15 +28,15 @@ The 10X Visium Colorectal Cancer Visium datasets (CRC) are available in: [https:
 ## Pre-trained general-purpose foundation mode
 Given the outstanding performance of large pre-trained general-purpose foundation models in clinical tasks, we utilize UNI as the backbone feature extractor specifically for one branch within the Local Stream. Before using HiST-Seg, you need to apply for permission to access the UNI model weights at:  [https://huggingface.co/mahmoodlab/UNI](https://huggingface.co/mahmoodlab/UNI).
 
-For spatial transcriptomics, please refer to the scGPT-spatial installation guide：[https://github.com/bowang-lab/scGPT-spatial](https://github.com/bowang-lab/scGPT-spatial). Once the installation is complete, you can directly run the ''data_preprocess/scgpt_Extractor_XXX.py'' script to extract gene features.
+For spatial transcriptomics, please refer to the scGPT-spatial installation guide：[https://github.com/bowang-lab/scGPT-spatial](https://github.com/bowang-lab/scGPT-spatial). Once the installation is complete, you can directly run the ''data_preprocess/scgpt_Extractor_xxx.py'' script to extract gene features.
 
 ## HiST-Seg pipeline
 - Install the UNI module form [https://github.com/mahmoodlab/UNI](https://github.com/mahmoodlab/UNI).
 - Install the scGPT-sptial from [https://huggingface.co/mahmoodlab/UNI](https://github.com/bowang-lab/scGPT-spatial).
-- Run data_preprocess/crop_XXX.py
-- Run data_preprocess/patching_XXX.py
-- Run data_preprocess/scgpt_Extractor_XXX.py
-- Run engine/train_XXX.py
-- Run engine/inference_XXX.py
+- Run data_preprocess/crop_xxx.py
+- Run data_preprocess/patching_xxx.py
+- Run data_preprocess/scgpt_Extractor_xxx.py
+- Run engine/train_xxx.py
+- Run engine/inference_xxx.py
 - Run downstream
 
