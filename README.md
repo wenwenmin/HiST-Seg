@@ -33,7 +33,9 @@ For spatial transcriptomics, please refer to the scGPT-spatial installation guid
 ## HiST-Seg pipeline
 - Install the UNI module form [https://github.com/mahmoodlab/UNI](https://github.com/mahmoodlab/UNI).
 - Install the scGPT-sptial from [https://huggingface.co/mahmoodlab/UNI](https://github.com/bowang-lab/scGPT-spatial).
-- Run data_preprocess
+- Run data_preprocess/crop_XXX.py
+- Run data_preprocess/patching_XXX.py
+- Run data_preprocess/scgpt_Extractor_XXX.py
 - Run engine/train_XXX.py
 - Run engine/inference_XXX.py
 - Run downstream
