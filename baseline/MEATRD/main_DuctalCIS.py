@@ -1,0 +1,116 @@
+import argparse
+import pandas as pd
+import scanpy as sc
+import torch
+import numpy as np
+import random
+import dgl
+from dgl.data.utils import load_graphs
+from finetune import SNNet
+from pretrain import pretrain
+from utils import evaluate, set_all_seeds
+def data_factory(data_path, data_name, is_training=True, label_path=None):
+    if is_training:
+        label = None
+        data = load_graphs(data_path+"ref.bin")[0][0]
+    else:
+        # 修改这里：按行读取，而不是按空格分割
+        label = np.loadtxt(label_path, dtype=int)
+        data = load_graphs(data_path + data_name + "_tgt.bin")[0][0]
+    return data, label
+
+def train():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--data_path', default='dataset/DuctalCIS/', type=str)
+    parser.add_argument('--unet_epochs', default=10, type=int)
+    parser.add_argument('--batch_size', default=128, type=int)
+    parser.add_argument('--pre_lr', default=5e-4, type=float)
+    parser.add_argument('--fine_epochs', default=[10,5], type=list)
+    parser.add_argument('--fine_lr', default=1e-4, type=float)
+    parser.add_argument('--device', default='cuda:0', type=str)
+
+    args = parser.parse_args()
+
+    data, _ = data_factory(args.data_path, None, True)
+    #pretrain
+    pretrain(data, unet_epochs=args.unet_epochs,
+             batch_size=args.batch_size,
+             learning_rate=args.pre_lr, Mobile=True)
+    #finetune
+    model = SNNet(epochs=args.fine_epochs, batch_size=args.batch_size, learning_rate=args.fine_lr,
+                  GPU=args.device, Mobile=True)
+    model.fit(data)
+
+    return model, args
+
+import os
+def run_test(model, args, data_name, label_path,seed=200):
+    data, label = data_factory(args.data_path, data_name, False, label_path)
+    score = model.predict(data)
+    output_str = ' '.join([f'{x:.4f}' for x in score])
+    os.makedirs("../../predict_files/MEATRD/DuctalCIS", exist_ok=True)
+    with open(f'../../predict_files/MEATRD/DuctalCIS/{data_name}_scores_seed={seed}.txt', 'w') as f:
+        f.write(output_str)
+
+    auc, ap, f1, y_pred = evaluate(label, score, pre=True)
+    output_str = ' '.join(map(str, y_pred.tolist()))
+    with open(f'../../predict_files/MEATRD/DuctalCIS/{data_name}_pred_seed={seed}.txt', 'w') as f:
+        f.write(output_str)
+
+    print(f'Section {data_name}  AUC: {auc:5.3f} AP: {ap:5.3f} F1:{f1:5.3f}')
+    return auc, ap, f1
+
+
+if __name__ == '__main__':
+    # HBC IDC 通用 需要改的地方：parser.add_argument('--data_path')  sections = XXX    label_path=XXX
+    # seeds = [42, 123, 456, 789, 2026]
+    seeds = [24,42,123,345,567]
+    aucss, apss, f1ss = [], [], []
+    for seed in seeds:
+        print("====================== 开始实验，Seed={} ==========================".format(seed))
+        aucs, aps, f1s = [], [], []
+        set_all_seeds(seed)
+        model, args = train()
+        sections = ['DuctalCIS']
+        for section in sections:
+            auc, ap, f1 = run_test(model, args, section, label_path="../../data/HB/Ductal_CIS/spot_labels.txt",seed=seed)
+            aucs.append(auc)
+            aps.append(ap)
+            f1s.append(f1)
+        aucss.append(aucs)
+        apss.append(aps)
+        f1ss.append(f1s)
+
+
+    aucs_array = np.array(aucss)
+    auc_slice_mean = np.mean(aucs_array, axis=0)
+    auc_slice_std = np.std(aucs_array, axis=0)
+    auc_all_mean = np.mean(aucs_array)
+    auc_all_std = np.std(aucs_array)
+
+    aps_array = np.array(apss)
+    ap_slice_mean = np.mean(aps_array, axis=0)
+    ap_slice_std = np.std(aps_array, axis=0)
+    ap_all_mean = np.mean(aps_array)
+    ap_all_std = np.std(aps_array)
+
+    f1s_array = np.array(f1ss)
+    f1_slice_mean = np.mean(f1s_array, axis=0)
+    f1_slice_std = np.std(f1s_array, axis=0)
+    f1_all_mean = np.mean(f1s_array)
+    f1_all_std = np.std(f1s_array)
+
+    print("\n" + "=" * 60)
+    print("Results for Paper (Mean ± Std):")
+    print("=" * 60)
+    print(f"AUC: {[f'{m:.3f}±{s:.3f}' for m, s in zip(auc_slice_mean, auc_slice_std)]}")
+    print(f"AP: {[f'{m:.3f}±{s:.3f}' for m, s in zip(ap_slice_mean, ap_slice_std)]}")
+    print(f"F1: {[f'{m:.3f}±{s:.3f}' for m, s in zip(f1_slice_mean, f1_slice_std)]}")
+
+    print("\n" + "=" * 60)
+    print("All:")
+    print("=" * 60)
+    print(f"AUC: {auc_all_mean:.3f} ± {auc_all_std:.3f}")
+    print(f"AP:  {ap_all_mean:.3f} ± {ap_all_std:.3f}")
+    print(f"F1:  {f1_all_mean:.3f} ± {f1_all_std:.3f}")
