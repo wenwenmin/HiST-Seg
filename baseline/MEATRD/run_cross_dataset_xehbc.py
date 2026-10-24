@@ -1,0 +1,124 @@
+# Path configuration:
+# Replace the repository-relative defaults (data/, outputs/, and workspaces/)
+# for your environment. See readme_baseline.txt at the baseline package root.
+# Spot-level protocol:
+# Generate spot predictions from the method-native, original-scale H&E/ST data
+# (or features prepared from those data). Do not use resized_data/cropped_data
+# as model inputs. Those aligned files are used only for pixel-level evaluation.
+# Preserve the original AnnData observation order in every prediction file.
+import argparse
+import pandas as pd
+import scanpy as sc
+import torch
+import numpy as np
+import random
+import dgl
+from dgl.data.utils import load_graphs
+from finetune import SNNet
+from pretrain import pretrain
+from utils import evaluate, set_all_seeds
+def data_factory(data_path, data_name, is_training=True, label_path=None):
+    if is_training:
+        label = None
+        data = load_graphs(data_path+"ref.bin")[0][0]
+    else:
+        # Configure this path for your environment; see readme_baseline.txt.
+        label = np.loadtxt(label_path, dtype=int)
+        data = load_graphs(data_path + data_name + "_tgt.bin")[0][0]
+    return data, label
+
+def train():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--data_path', default='dataset/Xenium_HBC/', type=str)
+    parser.add_argument('--unet_epochs', default=5, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--pre_lr', default=5e-4, type=float)
+    parser.add_argument('--fine_epochs', default=[3,2], type=list)
+    parser.add_argument('--fine_lr', default=1e-4, type=float)
+    parser.add_argument('--device', default='cuda:0', type=str)
+
+    args = parser.parse_args()
+
+    data, _ = data_factory(args.data_path, None, True)
+    #pretrain
+    pretrain(data, unet_epochs=args.unet_epochs,
+             batch_size=args.batch_size,
+             learning_rate=args.pre_lr, Mobile=True)
+    #finetune
+    model = SNNet(epochs=args.fine_epochs, batch_size=args.batch_size, learning_rate=args.fine_lr,
+                  GPU=args.device, Mobile=True)
+    model.fit(data)
+
+    return model, args
+
+import os
+def run_test(model, args, data_name, label_path):
+    data, label = data_factory(args.data_path, data_name, False, label_path)
+    score = model.predict(data)
+    output_str = ' '.join([f'{x:.4f}' for x in score])
+    os.makedirs("../../predict_files/MEATRD/Xenium_HBC", exist_ok=True)
+    with open(f'../../predict_files/MEATRD/Xenium_HBC/{data_name}_scores_seed={seed}.txt', 'w') as f:
+        f.write(output_str)
+
+    auc, ap, f1, y_pred = evaluate(label, score, pre=True)
+    output_str = ' '.join(map(str, y_pred.tolist()))
+    with open(f'../../predict_files/MEATRD/Xenium_HBC/{data_name}_pred_seed={seed}.txt', 'w') as f:
+        f.write(output_str)
+
+    print(f'Section {data_name}  AUC: {auc:5.3f} AP: {ap:5.3f} F1:{f1:5.3f}')
+    return auc, ap, f1
+
+
+if __name__ == '__main__':
+    # Configure this path for your environment; see readme_baseline.txt.
+    # seeds = [42, 123, 456, 789, 2026]
+    seeds = [24,42,123,345,567]
+    aucss, apss, f1ss = [], [], []
+    for seed in seeds:
+        print('====================== Start experiment, Seed={} =========================='.format(seed))
+        aucs, aps, f1s = [], [], []
+        set_all_seeds(seed)
+        model, args = train()
+        sections = ['Xenium_HBC']
+        for section in sections:
+            auc, ap, f1 = run_test(model, args, section, label_path="../../data/HB/Xenium_HBC/spot level/label.txt")
+            aucs.append(auc)
+            aps.append(ap)
+            f1s.append(f1)
+        aucss.append(aucs)
+        apss.append(aps)
+        f1ss.append(f1s)
+
+
+    aucs_array = np.array(aucss)
+    auc_slice_mean = np.mean(aucs_array, axis=0)
+    auc_slice_std = np.std(aucs_array, axis=0)
+    auc_all_mean = np.mean(aucs_array)
+    auc_all_std = np.std(aucs_array)
+
+    aps_array = np.array(apss)
+    ap_slice_mean = np.mean(aps_array, axis=0)
+    ap_slice_std = np.std(aps_array, axis=0)
+    ap_all_mean = np.mean(aps_array)
+    ap_all_std = np.std(aps_array)
+
+    f1s_array = np.array(f1ss)
+    f1_slice_mean = np.mean(f1s_array, axis=0)
+    f1_slice_std = np.std(f1s_array, axis=0)
+    f1_all_mean = np.mean(f1s_array)
+    f1_all_std = np.std(f1s_array)
+
+    print("\n" + "=" * 60)
+    print("Results for Paper (Mean ± Std):")
+    print("=" * 60)
+    print(f"AUC: {[f'{m:.3f}±{s:.3f}' for m, s in zip(auc_slice_mean, auc_slice_std)]}")
+    print(f"AP: {[f'{m:.3f}±{s:.3f}' for m, s in zip(ap_slice_mean, ap_slice_std)]}")
+    print(f"F1: {[f'{m:.3f}±{s:.3f}' for m, s in zip(f1_slice_mean, f1_slice_std)]}")
+
+    print("\n" + "=" * 60)
+    print("All:")
+    print("=" * 60)
+    print(f"AUC: {auc_all_mean:.3f} ± {auc_all_std:.3f}")
+    print(f"AP:  {ap_all_mean:.3f} ± {ap_all_std:.3f}")
+    print(f"F1:  {f1_all_mean:.3f} ± {f1_all_std:.3f}")
